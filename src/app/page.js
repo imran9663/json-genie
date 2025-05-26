@@ -1,103 +1,196 @@
-import Image from "next/image";
+"use client";
+import { ToastDestructive } from "@/components/ToastDestructive";
+import { AlertCircle, ClipboardCopy, FileDown, FileJson, RotateCcw, Terminal } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import ReactJson from 'react-json-view';
+import testJson from "@/utils/test.json";
+import PrimaryBtn from "@/components/PrimaryBtn";
+import reactJsonTheme, { reactJsonDarkTheme } from "@/components/reactJsonTheme";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export default function Home() {
+const Home = () => {
+  const [parsedJson, setParsedJson] = useState(null)
+  const [rawJson, setRawJson] = useState(null);
+  const [error, setError] = useState({
+    message: '',
+    show: false
+  });
+
+  const { theme } = useTheme();
+
+
+  const handlePaste = (event) => {
+    event.preventDefault();
+    const text = event.clipboardData.getData('text/plain');
+
+  };
+  const handleChange = (e) => {
+    setRawJson(e.target.value);
+    try {
+      const json = JSON.parse(e.target.value);
+      setError({
+        message: '',
+        show: false
+      });
+    } catch (error) {
+      console.log("Invalid JSON data:", error.message);
+      setError({
+        message: error.message,
+        show: true
+      });
+    }
+  };
+
+  const handleGenerateJson = () => {
+    try {
+      const json = JSON.parse(rawJson);
+      setParsedJson(json);
+      setError({
+        message: '',
+        show: false
+      });
+    } catch (error) {
+      setParsedJson(null);
+      setError({
+        message: error.message,
+        show: true
+      });
+    }
+  }
+  const onReset = () => {
+    console.log("Resetting JSON data");
+
+    setRawJson('');
+    setParsedJson(null);
+
+  }
+  const handleDownload = () => {
+    if (!rawJson || error.show) {
+      toast.error("Please enter valid JSON data before downloading.");
+      return;
+    }
+    const blob = new Blob([rawJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'json_Genie.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  const handleCopy = () => {
+    if (!rawJson || error.show) {
+      toast.error("Please enter valid JSON data before copying.");
+      return;
+    }
+    navigator.clipboard.writeText(rawJson)
+      .then(() => {
+        toast.success("JSON data copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error('Failed to copy: ', err);
+        toast.error("Failed to copy JSON data.");
+      });
+  };
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="flex flex-col">
+      <div className="flex flex-col items-center justify-center w-full h-fit py-4 ">
+        <h1 className="lg:text-4xl md:text-3xl sm:text-2xl font-bold text-center">
+          Welcome to JSON Genie
+        </h1>
+        <p className="mt-4 text-lg lg:text-lg md:text-md sm:text-xs text-center capitalize">
+          Your go-to tool for generating and managing JSON data effortlessly. 😊
+        </p>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="flex flex-col md:flex-row gap-4 px-2 h-3/4  ">
+        {/* add a text area to add input */}
+        <textarea
+          onChange={handleChange}
+          rows={20}
+          value={rawJson ? rawJson : ''}
+          autoFocus
+          minLength={2}
+          style={{ minHeight: "120px" }}
+          className="flex-1 p-4 border border-orange-500 rounded-l-md focus:outline-none min-h-[120px] sm:min-h-[160px] md:min-h-[200px] resize-y"
+          placeholder="Enter your JSON data here..."
+        />
+        {
+          error.show && (
+            <div className="block md:hidden">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  {error.message}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )
+        }
+
+        <div className="flex flex-col justify-center gap-4 mt-4">
+          <div className="text-center md:block hidden">
+            <img src="/json-genie.svg" alt="JSON Genie Logo" className="inline-block h-24 w-24 ml-2" />
+          </div>
+          <PrimaryBtn disabled={!rawJson || error.show} onClick={handleGenerateJson}>
+            <FileJson />
+            Generate JSON
+          </PrimaryBtn>
+          <PrimaryBtn onClick={onReset}>
+            <RotateCcw />
+            Clear
+          </PrimaryBtn>
+          <div className="flex flex-row gap-1 content-center justify-center items-center">
+            <PrimaryBtn onClick={handleDownload} disabled={!rawJson || error.show}>
+              <FileDown />
+              Download
+            </PrimaryBtn>
+            <PrimaryBtn onClick={handleCopy} disabled={!rawJson || error.show}>
+              <ClipboardCopy />
+              Copy
+            </PrimaryBtn>
+          </div>
+
+
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div className="flex-1 p-4 border overflow-y-auto  border-orange-500 rounded-l-md focus:outline-none min-h-[120px] sm:min-h-[160px] md:min-h-[200px] resize-y">
+          <ReactJson
+            style={{ height: "60vh", width: "100%", overflowY: "auto" }}
+            src={parsedJson ? parsedJson : {}}
+            theme={theme === "dark" ? reactJsonDarkTheme : reactJsonTheme}
+            collapsed={false}
+            indentWidth={2}
+            displayObjectSize={false}
+            displayArrayKey={false}
+            name={false}
+            iconStyle='triangle'
+            enableClipboard={false}
+            displayDataTypes={false}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        </div>
+      </div>
+      {
+        error.show && (
+          <div className="hidden md:block w-1/2  px-2 mt-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription >
+                {error.message}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )
+      }
+
+
+    </main>
   );
-}
+};
+
+export default Home;
