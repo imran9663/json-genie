@@ -2,6 +2,7 @@
 
 Effortlessly generate, view, and manage JSON data with a beautiful, modern interface.
 
+![JSON Genie UI](public/json-genie_ui.jpg)
 ## Features
 
 - ✨ Live JSON Viewer with custom theming (light/dark mode)
@@ -85,4 +86,4 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-> Made with ❤️ by [Imran Pasha ] (https://imranpashai.netlify.app/)   
+> Made with ❤️ by [Imran Pasha ] (https://imranpashai.netlify.app/)

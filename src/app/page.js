@@ -1,14 +1,13 @@
 "use client";
-import { ToastDestructive } from "@/components/ToastDestructive";
-import { AlertCircle, ClipboardCopy, FileDown, FileJson, RotateCcw, Terminal } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import ReactJson from 'react-json-view';
-import testJson from "@/utils/test.json";
 import PrimaryBtn from "@/components/PrimaryBtn";
 import reactJsonTheme, { reactJsonDarkTheme } from "@/components/reactJsonTheme";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, ClipboardCopy, FileDown, FileJson, RotateCcw, } from "lucide-react";
+import { useTheme } from "next-themes";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
 
 const Home = () => {
   const [parsedJson, setParsedJson] = useState(null)
@@ -19,13 +18,11 @@ const Home = () => {
   });
 
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-
-  const handlePaste = (event) => {
-    event.preventDefault();
-    const text = event.clipboardData.getData('text/plain');
-
-  };
   const handleChange = (e) => {
     setRawJson(e.target.value);
     try {
@@ -60,17 +57,22 @@ const Home = () => {
     }
   }
   const onReset = () => {
-    console.log("Resetting JSON data");
-
     setRawJson('');
     setParsedJson(null);
-
   }
+  const [shouldDownload, setShouldDownload] = useState(false);
   const handleDownload = () => {
     if (!rawJson || error.show) {
       toast.error("Please enter valid JSON data before downloading.");
       return;
     }
+    if (typeof window === "undefined") return;
+    setShouldDownload(true);
+  };
+
+  // Use useEffect to handle document usage on client only
+  useEffect(() => {
+    if (!shouldDownload) return;
     const blob = new Blob([rawJson], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -80,7 +82,8 @@ const Home = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+    setShouldDownload(false);
+  }, [shouldDownload, rawJson]);
   const handleCopy = () => {
     if (!rawJson || error.show) {
       toast.error("Please enter valid JSON data before copying.");
@@ -92,9 +95,10 @@ const Home = () => {
       })
       .catch((err) => {
         console.error('Failed to copy: ', err);
-        toast.error("Failed to copy JSON data.");
+        toast.error("😞 Failed to copy JSON data.");
       });
   };
+  if (!mounted) return null;
   return (
     <main className="flex flex-col">
       <div className="flex flex-col items-center justify-center w-full h-fit py-4 ">
