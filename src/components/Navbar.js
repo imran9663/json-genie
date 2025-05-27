@@ -1,23 +1,8 @@
 "use client";
 
-import { MenuIcon, Moon, Settings, Settings2, Settings2Icon, SettingsIcon } from "lucide-react";
+import { MenuIcon, SettingsIcon } from "lucide-react";
 
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-    navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import {
     Sheet,
     SheetContent,
@@ -74,7 +59,7 @@ const Navbar = () => {
                         <img
                             src="/json-genie.svg"
                             className="max-h-8"
-                            alt="Shadcn UI Navbar"
+                            alt="JSON Genie Logo"
                         />
                         <span className="text-lg text-slate-900  dark:text-white  font-semibold tracking-tighter">
                             JSON Genie

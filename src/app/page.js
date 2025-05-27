@@ -138,7 +138,7 @@ const Home = () => {
 
         <div className="flex flex-col justify-center gap-4 mt-4">
           <div className="text-center md:block hidden">
-            <img src="/json-genie.svg" alt="JSON Genie Logo" className="inline-block h-24 w-24 ml-2" />
+            <img src="/json-genie.svg" alt="JSON Genie - Your go-to tool for generating and managing JSON data effortlessly" className="inline-block h-24 w-24 ml-2" />
           </div>
           <PrimaryBtn disabled={!rawJson || error.show} onClick={handleGenerateJson}>
             <FileJson />
